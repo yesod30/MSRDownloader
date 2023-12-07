@@ -1,0 +1,54 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <!-- Add Controls for Previewer Here -->
+        </Border>
+    </Design.PreviewWith>
+   
+   <Style Selector="TreeViewItem">
+
+       <!-- PointerOver state -->
+      <Style Selector="^ /template/ Border#PART_LayoutRoot:pointerover">
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderBrush" Value="Transparent" />
+      </Style>
+
+      <!--  Pressed state  -->
+      <Style Selector="^:pressed /template/ Border#PART_LayoutRoot:pointerover">
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderBrush" Value="Transparent" />
+      </Style>
+      
+      <!--  Disabled state  -->
+      <Style Selector="^:disabled /template/ Border#PART_LayoutRoot">
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderBrush" Value="Transparent" />
+      </Style>
+      
+      <!--  Selected state  -->
+      <Style Selector="^:selected /template/ Border#PART_LayoutRoot">
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderBrush" Value="Transparent" />
+      </Style>
+      
+      <!--  Selected PointerOver state  -->
+      <Style Selector="^:selected /template/ Border#PART_LayoutRoot:pointerover">
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderBrush" Value="Transparent" />
+      </Style>
+      
+      <!--  Selected Pressed state  -->
+      <Style Selector="^:pressed:selected /template/ Border#PART_LayoutRoot:pointerover">
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderBrush" Value="Transparent" />
+      </Style>
+      
+      <!--  Disabled Selected state  -->
+      <Style Selector="^:disabled:selected /template/ Border#PART_LayoutRoot">
+         <Setter Property="Background" Value="Transparent" />
+         <Setter Property="BorderBrush" Value="Transparent" />
+      </Style>            
+
+   </Style>
+</Styles>
