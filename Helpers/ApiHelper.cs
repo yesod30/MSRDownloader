@@ -1,20 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using FFMpegCore;
-using FFMpegCore.Enums;
 using MSRDownloader.ApiResponses;
 using MSRDownloader.Models;
-using TagLib;
-using TagLib.Id3v2;
-using File = System.IO.File;
 
 namespace MSRDownloader.Helpers;
 
