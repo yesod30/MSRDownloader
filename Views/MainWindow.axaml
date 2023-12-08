@@ -4,10 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:MSRDownloader.Models"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:helpers="clr-namespace:MSRDownloader.Helpers"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="MSRDownloader.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/rhodes_island_icon.png"
         Title="MSR Downloader"
         Padding="20"
         WindowStartupLocation="CenterScreen">
@@ -18,22 +19,34 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
     
+    <Window.Resources>
+        <StreamGeometry x:Key="ArrowDownloadRegular">M12.25,39.5 L35.75,39.5 C36.4403559,39.5 37,40.0596441 37,40.75 C37,41.3972087 36.5081253,41.9295339 35.8778052,41.9935464 L35.75,42 L12.25,42 C11.5596441,42 11,41.4403559 11,40.75 C11,40.1027913 11.4918747,39.5704661 12.1221948,39.5064536 L12.25,39.5 L35.75,39.5 L12.25,39.5 Z M23.6221948,6.00645361 L23.75,6 C24.3972087,6 24.9295339,6.49187466 24.9935464,7.12219476 L25,7.25 L25,31.54 L30.6466793,25.8942911 C31.1348346,25.4061358 31.9262909,25.4061358 32.4144462,25.8942911 C32.9026016,26.3824465 32.9026016,27.1739027 32.4144462,27.6620581 L24.6362716,35.4402327 C24.1481163,35.928388 23.35666,35.928388 22.8685047,35.4402327 L15.0903301,27.6620581 C14.6021747,27.1739027 14.6021747,26.3824465 15.0903301,25.8942911 C15.5784855,25.4061358 16.3699417,25.4061358 16.858097,25.8942911 L22.5,31.536 L22.5,7.25 C22.5,6.60279131 22.9918747,6.0704661 23.6221948,6.00645361 L23.75,6 L23.6221948,6.00645361 Z</StreamGeometry>
+        <helpers:EnumConverter x:Key="EnumConverter"/>
+    </Window.Resources>
+    
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Spacing="10">
             <TextBlock HorizontalAlignment="Center" FontSize="35">MSR Downloader</TextBlock>
             <StackPanel Orientation="Horizontal" Spacing="20">
                 <StackPanel>
                     <TextBlock Margin="0 5">Override artist with:</TextBlock>
-                    <TextBox Width="200"/>
+                    <TextBox Text="{Binding ArtistOverride}" Width="200"/>
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Margin="0 5">Override album with:</TextBlock>
-                    <TextBox Width="200"/>
+                    <TextBox Text="{Binding AlbumOverride}" Width="200"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Margin="0 5">Final file format: </TextBlock>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <RadioButton GroupName="FileType" Content="Mp3" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Mp3}}"/>
+                        <RadioButton GroupName="FileType" Content="Flac" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Flac}}"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="20">
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding UpdateData}">Update data</Button>
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearData}">Clear saved data</Button>
+                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding UpdateData}">Update cached data</Button>
+                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearData}">Clear cached data</Button>
                 <Button Command="{Binding DownloadSongs}">Download selected songs</Button>
             </StackPanel>
             <Separator/>
@@ -43,6 +56,7 @@
                 <ProgressBar Minimum="0" Maximum="{Binding ProgressBarMaximum}" Value="{Binding ProgressBarValue}" Height="20" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" Name="ProgressBar"/>
                 <TextBlock Text="{Binding ProgressText}" RelativePanel.AlignHorizontalCenterWith="ProgressBar" RelativePanel.AlignVerticalCenterWith="ProgressBar"/>
             </RelativePanel>
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsWorking}" Height="20"></ProgressBar>
         </StackPanel>
         <DockPanel Margin="0 10 0 10">
             <TextBlock FontSize="25" DockPanel.Dock="Top" HorizontalAlignment="Center">Album List</TextBlock>
@@ -60,7 +74,10 @@
                             <DataTemplate DataType="models:Song">
                                 <StackPanel Orientation="Horizontal">
                                     <CheckBox IsChecked="{Binding IsSelected}" Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).HandleSelectSong}" CommandParameter="{Binding}" >
-                                        <TextBlock Text="{Binding Name}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <TextBlock Text="{Binding Name}"/>
+                                            <PathIcon Height="15" Width="15" Data="{StaticResource ArrowDownloadRegular}" IsVisible="{Binding IsDownloaded}"/>
+                                        </StackPanel>
                                     </CheckBox>
                                 </StackPanel>
                             </DataTemplate>

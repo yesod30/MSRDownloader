@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MSRDownloader.Models;
 
@@ -27,7 +28,7 @@ public static class FileHelper
             Directory.CreateDirectory(AppDataDirectory);
         }
         var content = JsonSerializer.Serialize(albums, SerializerOptions);
-        var albumFile = Path.Join(AppDataDirectory, "albums.json");
+        var albumFile = Path.Join(AppDataDirectory, Constants.AlbumFileJson);
         await File.WriteAllTextAsync(albumFile, content);
     }
     
@@ -37,7 +38,7 @@ public static class FileHelper
         {
             Directory.CreateDirectory(AppDataDirectory);
         }
-        var albumFile = Path.Join(AppDataDirectory, "albums.json");
+        var albumFile = Path.Join(AppDataDirectory, Constants.AlbumFileJson);
         if (File.Exists(albumFile))
         {
             var content = await File.ReadAllTextAsync(albumFile);
@@ -53,8 +54,8 @@ public static class FileHelper
             Directory.CreateDirectory(AppDataDirectory);
         }
         var content = JsonSerializer.Serialize(songCids);
-        var albumFile = Path.Join(AppDataDirectory, "downloaded.json");
-        await File.WriteAllTextAsync(albumFile, content);
+        var downloadedFile = Path.Join(AppDataDirectory, Constants.DownloadedFileJson);
+        await File.WriteAllTextAsync(downloadedFile, content);
     }
     
     public static async Task<List<string>> ReadDownloadedSongs()
@@ -63,12 +64,20 @@ public static class FileHelper
         {
             Directory.CreateDirectory(AppDataDirectory);
         }
-        var albumFile = Path.Join(AppDataDirectory, "download.json");
-        if (File.Exists(albumFile))
+        var downloadedFile = Path.Join(AppDataDirectory, Constants.DownloadedFileJson);
+        if (File.Exists(downloadedFile))
         {
-            var content = await File.ReadAllTextAsync(albumFile);
+            var content = await File.ReadAllTextAsync(downloadedFile);
             return JsonSerializer.Deserialize<List<string>>(content) ?? new();
         }
         return new();
+    }
+    
+    public static string TransformToValidFileName(string input)
+    {
+        // Remove any invalid characters from the input string
+        string invalidChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+        string sanitizedInput = Regex.Replace(input, "[" + Regex.Escape(invalidChars) + "]", "_");
+        return sanitizedInput;
     }
 }

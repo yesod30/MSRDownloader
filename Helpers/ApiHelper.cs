@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -28,13 +29,17 @@ public static class ApiHelper
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
     };
+
+    private static readonly HttpClient Client;
+
+    static ApiHelper()
+    {
+        Client = new HttpClient();
+    }
     
     public static async Task<List<AlbumResponse>> GetAlbumList()
     {
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        var json = await client.GetStringAsync(AlbumListUrl);
+        var json = await Client.GetStringAsync(AlbumListUrl);
         var albumsInfo = JsonSerializer.Deserialize<AlbumsInfoResponse>(json, SerializerOptions);
         var albumList = albumsInfo?.Data ?? new();
         return albumList;
@@ -42,28 +47,21 @@ public static class ApiHelper
 
     public static async Task<AlbumDataResponse?> GetAlbumDetail(string albumCid)
     {
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        var json = await client.GetStringAsync(string.Format(AlbumInfoUrl, albumCid));
+        var json = await Client.GetStringAsync(string.Format(AlbumInfoUrl, albumCid));
         var albumDetail = JsonSerializer.Deserialize<AlbumDetailResponse>(json, SerializerOptions);
         return albumDetail?.Data ?? null;
     }
 
     public static async Task<SongInfoResponse?> GetSongDetail(string songCid)
     {
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Accept.Clear();
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        var json = await client.GetStringAsync(string.Format(SongInfoUrl, songCid));
+        var json = await Client.GetStringAsync(string.Format(SongInfoUrl, songCid));
         var songDetail = JsonSerializer.Deserialize<SongDetailResponse>(json, SerializerOptions);
         return songDetail?.Data ?? null;
     }
 
-    public static async Task DownloadSong(Song song, string baseDir, string finalExtension)
+    public static async Task<DownloadTaskResult> DownloadSong(Song song, string baseDir)
     {
-        using HttpClient client = new();
-        var response = await client.GetAsync(song.SourceUrl);
+        var response = await Client.GetAsync(song.SourceUrl);
         if (response.IsSuccessStatusCode)
         {
             string extension;
@@ -82,56 +80,21 @@ public static class ApiHelper
             }
 
             var stream = await response.Content.ReadAsStreamAsync();
-            var tempFileName = $"{TransformToValidFileName(song.Name)}{extension}";
-            var finalFileName = $"{TransformToValidFileName(song.Name)}{finalExtension}";
-            var sanitizedAlbumName = TransformToValidFileName(song.AlbumName);
-            var tempFolderPath = Path.Join(baseDir, "Temp", sanitizedAlbumName);
-            var finalFolderPath = Path.Join(baseDir, "Songs", sanitizedAlbumName);
-            Console.WriteLine(tempFolderPath);
+            var tempFileName = $"{FileHelper.TransformToValidFileName(song.Name)}{extension}";
+            var sanitizedAlbumName = FileHelper.TransformToValidFileName(song.AlbumName);
+            var tempFolderPath = Path.Join(baseDir, Constants.TempFolderName, sanitizedAlbumName);
             Directory.CreateDirectory(tempFolderPath);
-            Directory.CreateDirectory(finalFolderPath);
             await using var fileStream = File.Create(Path.Join(tempFolderPath, tempFileName));
             stream.Seek(0, SeekOrigin.Begin);
             await stream.CopyToAsync(fileStream);
             fileStream.Close();
             stream.Close();
-        
-            FFMpegArguments
-                .FromFileInput(Path.Join(tempFolderPath, tempFileName))
-                .OutputToFile(Path.Join(finalFolderPath, finalFileName))
-                .ProcessSynchronously();
-        
-            var tfile = TagLib.File.Create(Path.Join(finalFolderPath, finalFileName));
-            tfile.Tag.Title = song.Name;
-            tfile.Tag.Album = song.AlbumName;
-            tfile.Tag.Performers = song.ArtistName.ToArray();
-
-            var imageBytes = await client.GetByteArrayAsync(song.CoverUrl);
-        
-            AttachmentFrame cover = new AttachmentFrame
-            {
-                Type = PictureType.FrontCover,
-                Description = "Cover",
-                MimeType = MediaTypeNames.Image.Jpeg,
-                Data = imageBytes,
-                TextEncoding = StringType.Latin1,
-            };
-        
-            tfile.Tag.Pictures = new IPicture[] { cover };
-            tfile.Save();
+            return new(song.Cid, tempFileName);
         }
         else
         {
             Console.WriteLine("Error downloading song: " + response.ReasonPhrase);
+            throw new Exception("Error downloading song: " + response.ReasonPhrase);
         }
-        
-    }
-
-    private static string TransformToValidFileName(string input)
-    {
-        // Remove any invalid characters from the input string
-        string invalidChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-        string sanitizedInput = Regex.Replace(input, "[" + Regex.Escape(invalidChars) + "]", "_");
-        return sanitizedInput;
     }
 }

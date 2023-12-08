@@ -34,4 +34,12 @@ public class Song : ReactiveObject
         get => isSelected;
         set => this.RaiseAndSetIfChanged(ref isSelected, value);
     }
+    
+    private bool isDownloaded;
+    [JsonIgnore]
+    public bool IsDownloaded
+    {
+        get => isDownloaded;
+        set => this.RaiseAndSetIfChanged(ref isDownloaded, value);
+    }
 }
