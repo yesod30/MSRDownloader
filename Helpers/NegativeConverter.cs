@@ -18,10 +18,6 @@ public class NegativeConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is double number)
-        {
-            return -number;
-        }
-        return value;
+        throw new NotImplementedException();
     }
 }

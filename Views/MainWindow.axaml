@@ -28,50 +28,51 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Spacing="15" HorizontalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="35">MSR Downloader</TextBlock>
+            
             <StackPanel Orientation="Horizontal" Spacing="20">
-                <StackPanel>
-                    <TextBlock Margin="0 5">Override artist with:</TextBlock>
-                    <TextBox Text="{Binding ArtistOverride}" Width="200"/>
+                <StackPanel Spacing="10">
+                    <TextBlock>Override artist with:</TextBlock>
+                    <TextBox Text="{Binding ArtistOverride}"/>
+                    <Border BorderBrush="DimGray" BorderThickness="1" Margin="0 10 0 0">
+                        <StackPanel Spacing="5" Margin="10 0 10 10">
+                            <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Manage Data" Name="TextData" Padding="3 0">
+                                <TextBlock.RenderTransform>
+                                    <TranslateTransform Y="{Binding #TextData.Bounds.Center.Y, Converter={StaticResource NegativeConverter}}"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                            <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding UpdateData}">Update cached data</Button>
+                            <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearAndUpdateData}">Clear and update cached data</Button>
+                            <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearDownloadedData}">Clear downloaded data</Button>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-                <StackPanel>
-                    <TextBlock Margin="0 5">Override album with:</TextBlock>
-                    <TextBox Text="{Binding AlbumOverride}" Width="200"/>
+                
+                <StackPanel Spacing="10">
+                    <TextBlock>Override album with:</TextBlock>
+                    <TextBox Text="{Binding AlbumOverride}"/>
+                    <Border BorderBrush="DimGray" BorderThickness="1" Margin="0 10 0 0">
+                        <StackPanel Spacing="5" Margin="10 0 10 10">
+                            <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Data selection" Name="TextSelection" Padding="3 0">
+                                <TextBlock.RenderTransform>
+                                    <TranslateTransform Y="{Binding #TextSelection.Bounds.Center.Y, Converter={StaticResource NegativeConverter}}"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                            <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAllNotDownload}">Select all not downloaded</Button>
+                            <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAll}">Select all</Button>
+                            <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding DeselectAll}">Deselect all</Button>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
+                
                 <StackPanel>
-                    <TextBlock Margin="0 5">Final file format: </TextBlock>
-                    <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock>Final file format:</TextBlock>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0 10">
                         <RadioButton GroupName="FileType" Content="Mp3" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Mp3}}"/>
                         <RadioButton GroupName="FileType" Content="Flac" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Flac}}"/>
                     </StackPanel>
+                    <Button VerticalAlignment="Center" Margin="0 10" IsEnabled="{Binding !IsLoadingData}" Command="{Binding DownloadSongs}">Download selected songs</Button>
                 </StackPanel>
-            </StackPanel>
-            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="10">
-                <Border BorderBrush="DimGray" BorderThickness="1">
-                    <StackPanel Spacing="5" Margin="10 0 10 10">
-                        <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Manage Data:" Name="TextData" Padding="3 0">
-                            <TextBlock.RenderTransform>
-                                <TranslateTransform Y="{Binding #TextData.Bounds.Center.Y, Converter={StaticResource NegativeConverter}}"/>
-                            </TextBlock.RenderTransform>
-                        </TextBlock>
-                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding UpdateData}">Update cached data</Button>
-                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearAndUpdateData}">Clear and update cached data</Button>
-                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearDownloadedData}">Clear downloaded data</Button>
-                    </StackPanel>
-                </Border>
                 
-                <Border BorderBrush="DimGray" BorderThickness="1">
-                    <StackPanel Spacing="5" Margin="10 0 10 10">
-                        <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Data selection:" Name="TextSelection" Padding="3 0">
-                            <TextBlock.RenderTransform>
-                                <TranslateTransform Y="{Binding #TextSelection.Bounds.Center.Y, Converter={StaticResource NegativeConverter}}"/>
-                            </TextBlock.RenderTransform>
-                        </TextBlock>
-                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAllNotDownload}">Select all not downloaded</Button>
-                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAll}">Select all</Button>
-                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding DeselectAll}">Deselect all</Button>
-                    </StackPanel>
-                </Border>
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding DownloadSongs}">Download selected songs</Button>
             </StackPanel>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Spacing="5">
