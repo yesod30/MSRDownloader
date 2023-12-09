@@ -47,11 +47,15 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
                 <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding UpdateData}">Update cached data</Button>
                 <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearData}">Clear cached data</Button>
+                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearDownloadedData}">Clear downloaded data</Button>
+                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAllNotDownload}">Select all not downloaded</Button>
+                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAll}">Select all</Button>
+                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding DeselectAll}">Deselect all</Button>
                 <Button Command="{Binding DownloadSongs}">Download selected songs</Button>
             </StackPanel>
             <Separator/>
         </StackPanel>
-        <StackPanel DockPanel.Dock="Bottom">
+        <StackPanel DockPanel.Dock="Bottom" Spacing="5">
             <RelativePanel>
                 <ProgressBar Minimum="0" Maximum="{Binding ProgressBarMaximum}" Value="{Binding ProgressBarValue}" Height="20" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" Name="ProgressBar"/>
                 <TextBlock Text="{Binding ProgressText}" RelativePanel.AlignHorizontalCenterWith="ProgressBar" RelativePanel.AlignVerticalCenterWith="ProgressBar"/>
@@ -62,12 +66,15 @@
             <TextBlock FontSize="25" DockPanel.Dock="Top" HorizontalAlignment="Center">Album List</TextBlock>
             <Border Padding="0 5 0 0" Margin="0 5 0 0" BorderBrush="DimGray" BorderThickness="1">
                 <ScrollViewer>
-                    <TreeView ItemsSource="{Binding AlbumsList}">
+                    <TreeView IsEnabled="{Binding !IsLoadingData}" ItemsSource="{Binding AlbumsList}">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:Album" ItemsSource="{Binding Songs}">
                                 <StackPanel Orientation="Horizontal">
                                     <CheckBox IsChecked="{Binding IsSelected}" Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).HandleSelectAlbum}" CommandParameter="{Binding}" PointerPressed="BlockDoubleClickExpand">
-                                        <TextBlock Text="{Binding Name}" PointerPressed="InputElement_OnPointerPressed" />
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <TextBlock Text="{Binding Name}" PointerPressed="InputElement_OnPointerPressed" />
+                                            <PathIcon Height="15" Width="15" Data="{StaticResource ArrowDownloadRegular}" IsVisible="{Binding IsDownloaded}"/>
+                                        </StackPanel>
                                     </CheckBox>
                                 </StackPanel>
                             </TreeDataTemplate>

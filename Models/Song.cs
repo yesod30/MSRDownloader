@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using System.ComponentModel;
+using System.Runtime.Serialization;
 using ReactiveUI;
 
 namespace MSRDownloader.Models;
@@ -28,7 +29,7 @@ public class Song : ReactiveObject
     public List<string> ArtistName { get; set; } = new();
     
     private bool isSelected;
-    [JsonIgnore]
+    [IgnoreDataMember]
     public bool IsSelected
     {
         get => isSelected;
@@ -36,7 +37,7 @@ public class Song : ReactiveObject
     }
     
     private bool isDownloaded;
-    [JsonIgnore]
+    [IgnoreDataMember]
     public bool IsDownloaded
     {
         get => isDownloaded;

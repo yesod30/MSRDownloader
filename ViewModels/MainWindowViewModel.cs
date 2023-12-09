@@ -3,20 +3,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Reactive.Concurrency;
+using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using DynamicData;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 using MSRDownloader.Helpers;
 using MSRDownloader.Models;
 using ReactiveUI;
-using System.Reactive.Concurrency;
-using System.Reflection;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Metadata;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 namespace MSRDownloader.ViewModels;
 
@@ -113,10 +109,81 @@ public class MainWindowViewModel : ViewModelBase
         DownloadedSongs.AddRange(downloadedSongsCid);
     }
 
-    public void ClearData()
+    public async Task ClearData()
     {
         isLoadingData = true;
         AlbumsList.Clear();
+        await FileHelper.WriteAlbumData(AlbumsList.ToList());
+        isLoadingData = false;
+    }
+
+    public async Task ClearDownloadedData()
+    {
+        isLoadingData = true;
+        DownloadedSongs.Clear();
+        await FileHelper.WriteDownloadedSongs(DownloadedSongs.ToList());
+        isLoadingData = false;
+    }
+
+    public void SelectAllNotDownload()
+    {
+        isLoadingData = true;
+        foreach (var album in AlbumsList)
+        {
+            var songsNumber = album.Songs.Count;
+            var count = 0;
+            foreach (var albumSong in album.Songs)
+            {
+                if (!albumSong.IsDownloaded)
+                {
+                    albumSong.IsSelected = true;
+                    count++;
+                }
+            }
+
+            if (count == songsNumber)
+            {
+                album.IsSelected = true;
+            }
+            else if (count < songsNumber && count != 0)
+            {
+                album.IsSelected = null;
+            }
+            else if (count == 0)
+            {
+                album.IsSelected = false;
+            }
+        }
+        isLoadingData = false;
+    }
+    
+    public void SelectAll()
+    {
+        isLoadingData = true;
+        foreach (var album in AlbumsList)
+        {
+            foreach (var albumSong in album.Songs)
+            {
+                albumSong.IsSelected = true;
+            }
+
+            album.IsSelected = true;
+        }
+        isLoadingData = false;
+    }
+    
+    public void DeselectAll()
+    {
+        isLoadingData = true;
+        foreach (var album in AlbumsList)
+        {
+            foreach (var albumSong in album.Songs)
+            {
+                albumSong.IsSelected = false;
+            }
+
+            album.IsSelected = false;
+        }
         isLoadingData = false;
     }
     
@@ -149,6 +216,7 @@ public class MainWindowViewModel : ViewModelBase
                     {
                         var song = new Song(songDetail.Cid, songDetail.Name, album.Name, album.CoverUrl, songDetail.SourceUrl);
                         song.ArtistName.AddRange(songDetail.Artists);
+                        song.IsDownloaded = DownloadedSongs.Contains(song.Cid);
                         album.Songs.Add(song);
                     }
                 }
@@ -196,6 +264,8 @@ public class MainWindowViewModel : ViewModelBase
 
     public async void DownloadSongs()
     {
+        IsLoadingData = true;
+        IsWorking = true;
         ProgressBarValue = 0;
         var selectedSongs = AlbumsList.SelectMany(x => x.Songs.Where(y => y.IsSelected)).ToList();
         if (selectedSongs.Any())
@@ -249,7 +319,13 @@ public class MainWindowViewModel : ViewModelBase
             finally
             {
                 await FileHelper.WriteDownloadedSongs(DownloadedSongs.ToList());
-                Directory.Delete(Path.Join(currentFolder, Constants.TempFolderName), true);
+                var tempFolder = Path.Join(currentFolder, Constants.TempFolderName);
+                if (Directory.Exists(tempFolder))
+                {
+                    Directory.Delete(tempFolder, true);
+                }
+                IsLoadingData = false;
+                IsWorking = false;
                 ProgressText ="Done";
             }
         }
