@@ -29,15 +29,7 @@ public class MainWindowViewModel : ViewModelBase
     public ObservableCollection<Album> AlbumsList { get; } = new();
 
     public ObservableCollection<string> DownloadedSongs { get; } = new();
-
-    private bool isWorking;
-
-    public bool IsWorking
-    {
-        get => isWorking;
-        set => this.RaiseAndSetIfChanged(ref isWorking, value);
-    }
-
+    
     private bool isLoadingData;
 
     public bool IsLoadingData
@@ -119,6 +111,11 @@ public class MainWindowViewModel : ViewModelBase
         catch (Exception e)
         {
             LogHelper.WriteError("Error while loading album data", e);
+            LogHelper.WriteException(e);
+            var box = MessageBoxManager.GetMessageBoxStandard("Error",
+                "Error while loading data. Clearing data is reccomended.",
+                ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
+            await box.ShowAsync();
         }
 
         IsLoadingData = false;
@@ -236,21 +233,21 @@ public class MainWindowViewModel : ViewModelBase
                 if (albumDetail is not null)
                 {
                     var albumName = albumDetail.Name;
-                    var albumCoverulr = albumDetail.CoverUrl;
+                    var albumCoverUrl = albumDetail.CoverUrl;
                     List<Song> songs = new();
                     foreach (var albumSong in albumDetail.Songs)
                     {
                         var songDetail = await ApiHelper.GetSongDetail(albumSong.Cid);
                         if (songDetail is not null)
                         {
-                            var song = new Song(songDetail.Cid, songDetail.Name, albumName, albumCoverulr,
+                            var song = new Song(songDetail.Cid, songDetail.Name, albumName, albumCoverUrl,
                                 songDetail.SourceUrl);
                             song.ArtistName.AddRange(songDetail.Artists);
                             song.IsDownloaded = DownloadedSongs.Contains(song.Cid);
                             songs.Add(song);
                         }
                     }
-                    var album = new Album(albumDetail.Cid, albumName, albumCoverulr, songs);
+                    var album = new Album(albumDetail.Cid, albumName, albumCoverUrl, songs);
                     AlbumsList.Add(album);
                     ProgressBarValue++;
                     ProgressText = $"Fetched data for {ProgressBarValue}/{ProgressBarMaximum} albums";
@@ -259,7 +256,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            Console.WriteLine(e);
             LogHelper.WriteError("Error while updating album list", e);
             var box = MessageBoxManager.GetMessageBoxStandard("Error",
                 "Error while updating album list. Try to update again after the current update finish.",
@@ -307,7 +304,6 @@ public class MainWindowViewModel : ViewModelBase
     public async void DownloadSongs()
     {
         IsLoadingData = true;
-        IsWorking = true;
         ProgressBarValue = 0;
         var selectedSongs = AlbumsList.SelectMany(x => x.Songs.Where(y => y.IsSelected)).ToList();
         if (selectedSongs.Any())
@@ -389,7 +385,6 @@ public class MainWindowViewModel : ViewModelBase
                 }
 
                 IsLoadingData = false;
-                IsWorking = false;
                 ProgressText = "Done";
             }
         }

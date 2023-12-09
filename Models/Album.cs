@@ -49,8 +49,8 @@ public class Album : ReactiveObject
     public string Name { get; set; }
     
     public string CoverUrl { get; set; }
-    
-    public ObservableCollection<Song> Songs { get; }
+
+    public ObservableCollection<Song> Songs { get; } = new();
     
     private bool? isSelected = false;
     [IgnoreDataMember]

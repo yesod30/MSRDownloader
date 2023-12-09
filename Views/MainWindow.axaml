@@ -82,7 +82,6 @@
                 <ProgressBar Minimum="0" Maximum="{Binding ProgressBarMaximum}" Value="{Binding ProgressBarValue}" Height="20" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" Name="ProgressBar"/>
                 <TextBlock Text="{Binding ProgressText}" RelativePanel.AlignHorizontalCenterWith="ProgressBar" RelativePanel.AlignVerticalCenterWith="ProgressBar"/>
             </RelativePanel>
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsWorking}" Height="20"></ProgressBar>
         </StackPanel>
         <DockPanel Margin="0 10 0 10">
             <StackPanel DockPanel.Dock="Top">
