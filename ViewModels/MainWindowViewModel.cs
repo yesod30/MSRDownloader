@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using DynamicData;
+using FFMpegCore.Exceptions;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using MSRDownloader.Helpers;
@@ -284,25 +286,25 @@ public class MainWindowViewModel : ViewModelBase
                     song.IsDownloaded = true;
                     ProgressBarValue++;
                     ProgressText = $"Downloading songs: {ProgressBarValue}/{ProgressBarMaximum}";
-                    DownloadedSongs.Add(result.SongCid);
                     downloadTaskResults.Add(result);
                 });
 
                 ProgressBarValue = 0;
                 ProgressText = $"Converting songs: {ProgressBarValue}/{ProgressBarMaximum}";
 
-                await Parallel.ForEachAsync(selectedSongs, async (song, cancellationToken) =>
+                await Parallel.ForEachAsync(downloadTaskResults, async (downloadResult, cancellationToken) =>
                 {
-                    var tempFileName = downloadTaskResults.First(x => x.SongCid.Equals(song.Cid)).SongFileName;
-                    await ConversionHelper.ConvertAndApplyTags(song, currentFolder, tempFileName, fileExtension, ArtistOverride, AlbumOverride);
+                    await ConversionHelper.ConvertAndApplyTags(downloadResult.Song, currentFolder,
+                        downloadResult.SongFileName, fileExtension, ArtistOverride, AlbumOverride);
+                    downloadResult.Song.IsDownloaded = true;
+                    DownloadedSongs.Add(downloadResult.Song.Cid);
                     ProgressBarValue++;
                     ProgressText = $"Converting songs: {ProgressBarValue}/{ProgressBarMaximum}";
                 });
-                
+
             }
-            catch (Exception e)
+            catch (HttpRequestException e)
             {
-                Console.WriteLine(e);
                 if (e.Message.Contains("Forbidden"))
                 {
                     var box = MessageBoxManager.GetMessageBoxStandard("Error", "Cached data may be stale. Clear and update the data.",
@@ -311,10 +313,23 @@ public class MainWindowViewModel : ViewModelBase
                 }
                 else
                 {
-                    var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Unknown error: {e.Message}",
+                    var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Connection error: {e.Message}",
                         ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
                     await box.ShowAsync();
                 }
+            }
+            catch (FFMpegException e)
+            {
+                var box = MessageBoxManager.GetMessageBoxStandard("Error", "Error during conversion of one or more files. Some downloaed files may be corrupted",
+                    ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
+                await box.ShowAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Unknown error: {e.Message}",
+                    ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
+                await box.ShowAsync();
             }
             finally
             {

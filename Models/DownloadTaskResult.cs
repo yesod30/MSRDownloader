@@ -2,12 +2,12 @@
 
 public class DownloadTaskResult
 {
-    public DownloadTaskResult(string songCid, string songFileName)
+    public DownloadTaskResult(Song song, string songFileName)
     {
-        SongCid = songCid;
+        Song = song;
         SongFileName = songFileName;
     }
     
-    public string SongCid { get; set; }
+    public Song Song { get; set; }
     public string SongFileName { get; set; }
 }

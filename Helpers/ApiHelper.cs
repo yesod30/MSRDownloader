@@ -80,12 +80,12 @@ public static class ApiHelper
             await stream.CopyToAsync(fileStream);
             fileStream.Close();
             stream.Close();
-            return new(song.Cid, tempFileName);
+            return new(song, tempFileName);
         }
         else
         {
             Console.WriteLine("Error downloading song: " + response.ReasonPhrase);
-            throw new Exception("Error downloading song: " + response.ReasonPhrase);
+            throw new HttpRequestException("Error downloading song: " + response.ReasonPhrase);
         }
     }
 }
