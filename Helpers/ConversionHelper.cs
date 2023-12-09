@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Reflection;
 using System.Threading.Tasks;
 using FFMpegCore;
 using FFMpegCore.Enums;
@@ -18,6 +19,9 @@ public static class ConversionHelper
     static ConversionHelper()
     {
         Client = new HttpClient();
+        var currentExe = Assembly.GetEntryAssembly()?.Location ?? string.Empty;
+        string currentFolder = Path.GetDirectoryName(currentExe)!;
+        GlobalFFOptions.Configure(options => options.BinaryFolder = currentFolder);
     }
     
     public static async Task ConvertAndApplyTags(Song song, string baseDir, string tempFileName, string finalExtension, string artistOverride, string albumOverride)
