@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Reflection;
@@ -19,8 +20,7 @@ public static class ConversionHelper
     static ConversionHelper()
     {
         Client = new HttpClient();
-        var currentExe = Assembly.GetEntryAssembly()?.Location ?? string.Empty;
-        string currentFolder = Path.GetDirectoryName(currentExe)!;
+        var currentFolder = AppContext.BaseDirectory;
         GlobalFFOptions.Configure(options => options.BinaryFolder = currentFolder);
     }
     

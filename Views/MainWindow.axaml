@@ -63,16 +63,18 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
-                
-                <StackPanel>
-                    <TextBlock>Final file format:</TextBlock>
-                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0 10">
-                        <RadioButton GroupName="FileType" Content="Mp3" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Mp3}}"/>
-                        <RadioButton GroupName="FileType" Content="Flac" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Flac}}"/>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock >Final file format:</TextBlock>
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0 10">
+                            <RadioButton GroupName="FileType" Content="Mp3" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Mp3}}"/>
+                            <RadioButton GroupName="FileType" Content="Flac" IsChecked="{Binding OutputFileType, Converter={StaticResource EnumConverter}, ConverterParameter={x:Static models:FileType.Flac}}"/>
+                        </StackPanel>
                     </StackPanel>
-                    <Button VerticalAlignment="Center" Margin="0 10" IsEnabled="{Binding !IsLoadingData}" Command="{Binding DownloadSongs}">Download selected songs</Button>
-                </StackPanel>
-                
+                    <StackPanel VerticalAlignment="Center">
+                        <Button VerticalAlignment="Center" Margin="0 10" IsEnabled="{Binding !IsLoadingData}" Command="{Binding DownloadSongs}">Download selected songs</Button>
+                    </StackPanel>
+                </DockPanel>
             </StackPanel>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Spacing="5">

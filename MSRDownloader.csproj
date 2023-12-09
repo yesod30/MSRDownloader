@@ -2,6 +2,10 @@
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net7.0</TargetFramework>
+        <ApplicationIcon>Assets/rhodes_island_icon.ico</ApplicationIcon>
+        <SignAssembly>false</SignAssembly>
+        <AssemblyName>MSRDownloader</AssemblyName>
+        <Authors>Yesod30</Authors>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>

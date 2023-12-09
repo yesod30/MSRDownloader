@@ -273,8 +273,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             ProgressBarMaximum = selectedSongs.Count;
             ProgressText = $"Downloading songs: {ProgressBarValue}/{ProgressBarMaximum}";
-            var currentExe = Assembly.GetEntryAssembly()?.Location ?? string.Empty;
-            string currentFolder = Path.GetDirectoryName(currentExe)!;
+            var currentFolder = AppContext.BaseDirectory;
             var fileExtension = OutputFileType == FileType.Mp3 ? ".mp3" : ".flac";
             try
             {
