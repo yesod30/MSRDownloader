@@ -22,10 +22,11 @@
     <Window.Resources>
         <StreamGeometry x:Key="ArrowDownloadRegular">M12.25,39.5 L35.75,39.5 C36.4403559,39.5 37,40.0596441 37,40.75 C37,41.3972087 36.5081253,41.9295339 35.8778052,41.9935464 L35.75,42 L12.25,42 C11.5596441,42 11,41.4403559 11,40.75 C11,40.1027913 11.4918747,39.5704661 12.1221948,39.5064536 L12.25,39.5 L35.75,39.5 L12.25,39.5 Z M23.6221948,6.00645361 L23.75,6 C24.3972087,6 24.9295339,6.49187466 24.9935464,7.12219476 L25,7.25 L25,31.54 L30.6466793,25.8942911 C31.1348346,25.4061358 31.9262909,25.4061358 32.4144462,25.8942911 C32.9026016,26.3824465 32.9026016,27.1739027 32.4144462,27.6620581 L24.6362716,35.4402327 C24.1481163,35.928388 23.35666,35.928388 22.8685047,35.4402327 L15.0903301,27.6620581 C14.6021747,27.1739027 14.6021747,26.3824465 15.0903301,25.8942911 C15.5784855,25.4061358 16.3699417,25.4061358 16.858097,25.8942911 L22.5,31.536 L22.5,7.25 C22.5,6.60279131 22.9918747,6.0704661 23.6221948,6.00645361 L23.75,6 L23.6221948,6.00645361 Z</StreamGeometry>
         <helpers:EnumConverter x:Key="EnumConverter"/>
+        <helpers:NegativeConverter x:Key="NegativeConverter"/>
     </Window.Resources>
     
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Spacing="10">
+        <StackPanel DockPanel.Dock="Top" Spacing="15" HorizontalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="35">MSR Downloader</TextBlock>
             <StackPanel Orientation="Horizontal" Spacing="20">
                 <StackPanel>
@@ -44,16 +45,34 @@
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="20">
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding UpdateData}">Update cached data</Button>
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearData}">Clear cached data</Button>
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearDownloadedData}">Clear downloaded data</Button>
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAllNotDownload}">Select all not downloaded</Button>
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAll}">Select all</Button>
-                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding DeselectAll}">Deselect all</Button>
-                <Button Command="{Binding DownloadSongs}">Download selected songs</Button>
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="10">
+                <Border BorderBrush="DimGray" BorderThickness="1">
+                    <StackPanel Spacing="5" Margin="10 0 10 10">
+                        <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Manage Data:" Name="TextData" Padding="3 0">
+                            <TextBlock.RenderTransform>
+                                <TranslateTransform Y="{Binding #TextData.Bounds.Center.Y, Converter={StaticResource NegativeConverter}}"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding UpdateData}">Update cached data</Button>
+                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearAndUpdateData}">Clear and update cached data</Button>
+                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding ClearDownloadedData}">Clear downloaded data</Button>
+                    </StackPanel>
+                </Border>
+                
+                <Border BorderBrush="DimGray" BorderThickness="1">
+                    <StackPanel Spacing="5" Margin="10 0 10 10">
+                        <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Data selection:" Name="TextSelection" Padding="3 0">
+                            <TextBlock.RenderTransform>
+                                <TranslateTransform Y="{Binding #TextSelection.Bounds.Center.Y, Converter={StaticResource NegativeConverter}}"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAllNotDownload}">Select all not downloaded</Button>
+                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding SelectAll}">Select all</Button>
+                        <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding DeselectAll}">Deselect all</Button>
+                    </StackPanel>
+                </Border>
+                <Button IsEnabled="{Binding !IsLoadingData}" Command="{Binding DownloadSongs}">Download selected songs</Button>
             </StackPanel>
-            <Separator/>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Spacing="5">
             <RelativePanel>
@@ -63,7 +82,10 @@
             <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsWorking}" Height="20"></ProgressBar>
         </StackPanel>
         <DockPanel Margin="0 10 0 10">
-            <TextBlock FontSize="25" DockPanel.Dock="Top" HorizontalAlignment="Center">Album List</TextBlock>
+            <StackPanel DockPanel.Dock="Top">
+                <Separator Margin="0 0 0 15"/>
+                <TextBlock FontSize="25" HorizontalAlignment="Center">Album List</TextBlock>
+            </StackPanel>
             <Border Padding="0 5 0 0" Margin="0 5 0 0" BorderBrush="DimGray" BorderThickness="1">
                 <ScrollViewer>
                     <TreeView IsEnabled="{Binding !IsLoadingData}" ItemsSource="{Binding AlbumsList}">

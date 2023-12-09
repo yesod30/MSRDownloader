@@ -109,11 +109,12 @@ public class MainWindowViewModel : ViewModelBase
         DownloadedSongs.AddRange(downloadedSongsCid);
     }
 
-    public async Task ClearData()
+    public async Task ClearAndUpdateData()
     {
         isLoadingData = true;
         AlbumsList.Clear();
         await FileHelper.WriteAlbumData(AlbumsList.ToList());
+        await UpdateData();
         isLoadingData = false;
     }
 
