@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive.Concurrency;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using DynamicData;
@@ -318,9 +317,9 @@ public class MainWindowViewModel : ViewModelBase
                     await box.ShowAsync();
                 }
             }
-            catch (FFMpegException e)
+            catch (FFMpegException)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Error", "Error during conversion of one or more files. Some downloaed files may be corrupted",
+                var box = MessageBoxManager.GetMessageBoxStandard("Error", "Error during conversion of one or more files. Some downloaded files may be corrupted",
                     ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
                 await box.ShowAsync();
             }
