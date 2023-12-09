@@ -8,7 +8,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using DynamicData;
 using FFMpegCore.Exceptions;
 using MsBox.Avalonia;
@@ -21,8 +23,10 @@ namespace MSRDownloader.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    private readonly Window? window;
     public MainWindowViewModel()
     {
+        window = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
         RxApp.MainThreadScheduler.Schedule(LoadAlbumData);
     }
 
@@ -93,7 +97,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             var loadedAlbums = await FileHelper.ReadAlbumData();
-            AlbumsList.AddRange(loadedAlbums);
+            AlbumsList.AddRange(loadedAlbums.OrderBy(x => x.Order));
             if (!AlbumsList.Any())
             {
                 await UpdateData();
@@ -115,7 +119,7 @@ public class MainWindowViewModel : ViewModelBase
             var box = MessageBoxManager.GetMessageBoxStandard("Error",
                 "Error while loading data. Clearing data is reccomended.",
                 ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-            await box.ShowAsync();
+            await box.ShowWindowDialogAsync(window);
         }
 
         IsLoadingData = false;
@@ -222,9 +226,9 @@ public class MainWindowViewModel : ViewModelBase
             ProgressText = "No new album found";
             return;
         }
-
-        ProgressBarMaximum = albums.Count;
-        //ConcurrentQueue<Album> list = new();
+        
+        ProgressBarMaximum = albums.Count - 1;
+        ConcurrentQueue<Album> list = new();
         try
         {
             await Parallel.ForEachAsync(albums, async (albumResponse, cancellationToken) =>
@@ -235,20 +239,22 @@ public class MainWindowViewModel : ViewModelBase
                     var albumName = albumDetail.Name;
                     var albumCoverUrl = albumDetail.CoverUrl;
                     List<Song> songs = new();
-                    foreach (var albumSong in albumDetail.Songs)
+                    foreach ( var albumSong in albumDetail.Songs)
                     {
                         var songDetail = await ApiHelper.GetSongDetail(albumSong.Cid);
                         if (songDetail is not null)
                         {
                             var song = new Song(songDetail.Cid, songDetail.Name, albumName, albumCoverUrl,
-                                songDetail.SourceUrl);
+                                songDetail.SourceUrl, albumDetail.Songs.IndexOf(albumSong));
                             song.ArtistName.AddRange(songDetail.Artists);
                             song.IsDownloaded = DownloadedSongs.Contains(song.Cid);
                             songs.Add(song);
                         }
                     }
-                    var album = new Album(albumDetail.Cid, albumName, albumCoverUrl, songs);
-                    AlbumsList.Add(album);
+
+                    songs = songs.OrderBy(x => x.Order).ToList();
+                    var album = new Album(albumDetail.Cid, albumName, albumCoverUrl, albums.IndexOf(albumResponse), songs);
+                    list.Enqueue(album);
                     ProgressBarValue++;
                     ProgressText = $"Fetched data for {ProgressBarValue}/{ProgressBarMaximum} albums";
                 }
@@ -261,10 +267,22 @@ public class MainWindowViewModel : ViewModelBase
             var box = MessageBoxManager.GetMessageBoxStandard("Error",
                 "Error while updating album list. Try to update again after the current update finish.",
                 ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-            await box.ShowAsync();
+            await box.ShowWindowDialogAsync(window);
         }
-        //AlbumsList.AddRange(list);
-        ProgressText = "Saving data to file";
+
+        //deal with fixing order when adding new albums
+        if (AlbumsList.Any())
+        {
+            var newAlbums = list.Count;
+            foreach (var album in AlbumsList)
+            {
+                album.Order += newAlbums;
+            }
+        }
+
+        var temp = list.OrderBy(x => x.Order).Concat(AlbumsList).ToList();
+        AlbumsList.Clear();
+        AlbumsList.AddRange(temp);
         await FileHelper.WriteAlbumData(AlbumsList.ToList());
         ProgressText = "Done";
         IsLoadingData = false;
@@ -349,14 +367,14 @@ public class MainWindowViewModel : ViewModelBase
                     var box = MessageBoxManager.GetMessageBoxStandard("Error",
                         "Cached data may be stale. Clear and update the data.",
                         ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-                    await box.ShowAsync();
+                    await box.ShowWindowDialogAsync(window);
                 }
                 else
                 {
                     LogHelper.WriteError("Connection error", e);
                     var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Connection error: {e.Message}",
                         ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-                    await box.ShowAsync();
+                    await box.ShowWindowDialogAsync(window);
                 }
             }
             catch (FFMpegException e)
@@ -365,7 +383,7 @@ public class MainWindowViewModel : ViewModelBase
                 var box = MessageBoxManager.GetMessageBoxStandard("Error",
                     "Error during conversion of one or more files. Some downloaded files may be corrupted",
                     ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-                await box.ShowAsync();
+                await box.ShowWindowDialogAsync(window);
             }
             catch (Exception e)
             {
@@ -373,7 +391,7 @@ public class MainWindowViewModel : ViewModelBase
                 LogHelper.WriteError("Unknown error while downloading or converting", e);
                 var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Unknown error: {e.Message}",
                     ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
-                await box.ShowAsync();
+                await box.ShowWindowDialogAsync(window);
             }
             finally
             {

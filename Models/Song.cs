@@ -6,13 +6,14 @@ namespace MSRDownloader.Models;
 
 public class Song : ReactiveObject
 {
-    public Song(string cid, string name, string albumName, string coverUrl, string sourceUrl)
+    public Song(string cid, string name, string albumName, string coverUrl, string sourceUrl, int order)
     {
         Cid = cid;
         Name = name;
         AlbumName = albumName;
         SourceUrl = sourceUrl;
         CoverUrl = coverUrl;
+        Order = order;
     }
     
     public string Cid { get; set; } 
@@ -24,6 +25,8 @@ public class Song : ReactiveObject
     public string AlbumName { get; set; }
     
     public string CoverUrl { get; set; }
+    
+    public int Order { get; set; }
     
     public List<string> ArtistName { get; set; } = new();
     

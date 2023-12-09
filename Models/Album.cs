@@ -14,11 +14,12 @@ public class Album : ReactiveObject
 {
     
     [JsonConstructor]
-    public Album(string cid, string name, string coverUrl, ObservableCollection<Song> songs)
+    public Album(string cid, string name, string coverUrl, int order, ObservableCollection<Song> songs)
     {
         Cid = cid;
         Name = name;
         CoverUrl = coverUrl;
+        Order = order;
         Songs = songs;
         var isDownloadedObservable = Songs
             .ToObservableChangeSet()
@@ -29,11 +30,12 @@ public class Album : ReactiveObject
         isDownloaded = isDownloadedObservable.ToProperty(this, x => x.IsDownloaded);
     }
     
-    public Album(string cid, string name, string coverUrl, List<Song> songs)
+    public Album(string cid, string name, string coverUrl, int order, List<Song> songs)
     {
         Cid = cid;
         Name = name;
         CoverUrl = coverUrl;
+        Order = order;
         Songs = new ObservableCollection<Song>(songs);
         var isDownloadedObservable = Songs
             .ToObservableChangeSet()
@@ -49,6 +51,8 @@ public class Album : ReactiveObject
     public string Name { get; set; }
     
     public string CoverUrl { get; set; }
+    
+    public int Order { get; set; }
 
     public ObservableCollection<Song> Songs { get; } = new();
     
