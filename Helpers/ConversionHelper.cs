@@ -20,8 +20,9 @@ public static class ConversionHelper
     static ConversionHelper()
     {
         Client = new HttpClient();
-        var currentFolder = AppContext.BaseDirectory;
-        GlobalFFOptions.Configure(options => options.BinaryFolder = currentFolder);
+#if RELEASE
+        GlobalFFOptions.Configure(options => options.BinaryFolder = AppContext.BaseDirectory);
+#endif
     }
     
     public static async Task ConvertAndApplyTags(Song song, string baseDir, string tempFileName, string finalExtension, string artistOverride, string albumOverride)
