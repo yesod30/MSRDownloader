@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -96,20 +97,28 @@ public class MainWindowViewModel : ViewModelBase
     private async void LoadAlbumData()
     {
         IsLoadingData = true;
-        var loadedAlbums = await FileHelper.ReadAlbumData();
-        AlbumsList.AddRange(loadedAlbums);
-        if (!AlbumsList.Any())
-        {
-            await UpdateData();
-        }
 
-        await LoadDownloadedSongs();
-        foreach (var album in AlbumsList)
+        try
         {
-            foreach (var albumSong in album.Songs)
+            var loadedAlbums = await FileHelper.ReadAlbumData();
+            AlbumsList.AddRange(loadedAlbums);
+            if (!AlbumsList.Any())
             {
-                albumSong.IsDownloaded = DownloadedSongs.Contains(albumSong.Cid);
+                await UpdateData();
             }
+
+            await LoadDownloadedSongs();
+            foreach (var album in AlbumsList)
+            {
+                foreach (var albumSong in album.Songs)
+                {
+                    albumSong.IsDownloaded = DownloadedSongs.Contains(albumSong.Cid);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LogHelper.WriteError("Error while loading album data", e);
         }
 
         IsLoadingData = false;
@@ -218,6 +227,7 @@ public class MainWindowViewModel : ViewModelBase
         }
 
         ProgressBarMaximum = albums.Count;
+        //ConcurrentQueue<Album> list = new();
         try
         {
             await Parallel.ForEachAsync(albums, async (albumResponse, cancellationToken) =>
@@ -225,34 +235,38 @@ public class MainWindowViewModel : ViewModelBase
                 var albumDetail = await ApiHelper.GetAlbumDetail(albumResponse.Cid);
                 if (albumDetail is not null)
                 {
-                    var album = new Album(albumDetail.Cid, albumDetail.Name, albumDetail.CoverUrl);
+                    var albumName = albumDetail.Name;
+                    var albumCoverulr = albumDetail.CoverUrl;
+                    List<Song> songs = new();
                     foreach (var albumSong in albumDetail.Songs)
                     {
                         var songDetail = await ApiHelper.GetSongDetail(albumSong.Cid);
                         if (songDetail is not null)
                         {
-                            var song = new Song(songDetail.Cid, songDetail.Name, album.Name, album.CoverUrl,
+                            var song = new Song(songDetail.Cid, songDetail.Name, albumName, albumCoverulr,
                                 songDetail.SourceUrl);
                             song.ArtistName.AddRange(songDetail.Artists);
                             song.IsDownloaded = DownloadedSongs.Contains(song.Cid);
-                            album.Songs.Add(song);
+                            songs.Add(song);
                         }
                     }
-
+                    var album = new Album(albumDetail.Cid, albumName, albumCoverulr, songs);
                     AlbumsList.Add(album);
                     ProgressBarValue++;
                     ProgressText = $"Fetched data for {ProgressBarValue}/{ProgressBarMaximum} albums";
                 }
             });
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Debug.WriteLine(e);
+            LogHelper.WriteError("Error while updating album list", e);
             var box = MessageBoxManager.GetMessageBoxStandard("Error",
                 "Error while updating album list. Try to update again after the current update finish.",
                 ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
             await box.ShowAsync();
         }
-
+        //AlbumsList.AddRange(list);
         ProgressText = "Saving data to file";
         await FileHelper.WriteAlbumData(AlbumsList.ToList());
         ProgressText = "Done";
@@ -343,13 +357,15 @@ public class MainWindowViewModel : ViewModelBase
                 }
                 else
                 {
+                    LogHelper.WriteError("Connection error", e);
                     var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Connection error: {e.Message}",
                         ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
                     await box.ShowAsync();
                 }
             }
-            catch (FFMpegException)
+            catch (FFMpegException e)
             {
+                LogHelper.WriteError("Error while converting", e);
                 var box = MessageBoxManager.GetMessageBoxStandard("Error",
                     "Error during conversion of one or more files. Some downloaded files may be corrupted",
                     ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
@@ -357,7 +373,8 @@ public class MainWindowViewModel : ViewModelBase
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
+                LogHelper.WriteError("Unknown error while downloading or converting", e);
                 var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Unknown error: {e.Message}",
                     ButtonEnum.Ok, Icon.Error, WindowStartupLocation.CenterOwner);
                 await box.ShowAsync();

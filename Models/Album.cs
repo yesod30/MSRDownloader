@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
@@ -28,11 +29,12 @@ public class Album : ReactiveObject
         isDownloaded = isDownloadedObservable.ToProperty(this, x => x.IsDownloaded);
     }
     
-    public Album(string cid, string name, string coverUrl)
+    public Album(string cid, string name, string coverUrl, List<Song> songs)
     {
         Cid = cid;
         Name = name;
         CoverUrl = coverUrl;
+        Songs = new ObservableCollection<Song>(songs);
         var isDownloadedObservable = Songs
             .ToObservableChangeSet()
             .AutoRefresh(x => x.IsDownloaded)
@@ -48,7 +50,7 @@ public class Album : ReactiveObject
     
     public string CoverUrl { get; set; }
     
-    public ObservableCollection<Song> Songs { get; } = new();
+    public ObservableCollection<Song> Songs { get; }
     
     private bool? isSelected = false;
     [IgnoreDataMember]
