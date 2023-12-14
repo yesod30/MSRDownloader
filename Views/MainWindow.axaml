@@ -32,7 +32,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
                 <StackPanel Spacing="10">
                     <TextBlock>Override artist with:</TextBlock>
-                    <TextBox Text="{Binding ArtistOverride}"/>
+                    <TextBox Text="{Binding ArtistOverride}" TabIndex="0"/>
                     <Border BorderBrush="DimGray" BorderThickness="1" Margin="0 10 0 0">
                         <StackPanel Spacing="5" Margin="10 0 10 10">
                             <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Manage Data" Name="TextData" Padding="3 0">
@@ -49,7 +49,7 @@
                 
                 <StackPanel Spacing="10">
                     <TextBlock>Override album with:</TextBlock>
-                    <TextBox Text="{Binding AlbumOverride}"/>
+                    <TextBox Text="{Binding AlbumOverride}" TabIndex="1"/>
                     <Border BorderBrush="DimGray" BorderThickness="1" Margin="0 10 0 0">
                         <StackPanel Spacing="5" Margin="10 0 10 10">
                             <TextBlock HorizontalAlignment="Left" FontSize="13" Foreground="DimGray" Background="Black" Text="Data selection" Name="TextSelection" Padding="3 0">

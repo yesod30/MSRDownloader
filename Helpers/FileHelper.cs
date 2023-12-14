@@ -74,6 +74,33 @@ public static class FileHelper
         return new();
     }
     
+    public static  Options ReadOptions()
+    {
+        if (!Directory.Exists(AppDataDirectory))
+        {
+            Directory.CreateDirectory(AppDataDirectory);
+        }
+        var optionsFile = Path.Join(AppDataDirectory, Constants.OptionsFileJson);
+        if (File.Exists(optionsFile))
+        {
+            var content = File.ReadAllText(optionsFile);
+            return JsonSerializer.Deserialize<Options>(content, SerializerOptions) ?? new();
+        }
+        return new();
+    }
+    
+    public static async Task WriteOptions(string artistOverride, string albumOverride, FileType outputFileType)
+    {
+        var options = new Options(artistOverride, albumOverride, outputFileType);
+        if (!Directory.Exists(AppDataDirectory))
+        {
+            Directory.CreateDirectory(AppDataDirectory);
+        }
+        var content = JsonSerializer.Serialize(options, SerializerOptions);
+        var optionsFile = Path.Join(AppDataDirectory, Constants.OptionsFileJson);
+        await File.WriteAllTextAsync(optionsFile, content);
+    }
+    
     public static string TransformToValidFileName(string input)
     {
         // Remove any invalid characters from the input string

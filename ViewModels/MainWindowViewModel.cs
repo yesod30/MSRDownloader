@@ -24,9 +24,12 @@ namespace MSRDownloader.ViewModels;
 public class MainWindowViewModel : ViewModelBase
 {
     private readonly Window? window;
-    public MainWindowViewModel()
+    public MainWindowViewModel(Options options)
     {
         window = (Application.Current!.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
+        OutputFileType = options.OutputFileType;
+        ArtistOverride = options.ArtistOverride;
+        AlbumOverride = options.AlbumOverride;
         RxApp.MainThreadScheduler.Schedule(LoadAlbumData);
     }
 
@@ -323,6 +326,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         IsLoadingData = true;
         ProgressBarValue = 0;
+        await FileHelper.WriteOptions(ArtistOverride, AlbumOverride, OutputFileType);
         var selectedSongs = AlbumsList.SelectMany(x => x.Songs.Where(y => y.IsSelected)).ToList();
         if (selectedSongs.Any())
         {
@@ -404,6 +408,13 @@ public class MainWindowViewModel : ViewModelBase
 
                 IsLoadingData = false;
                 ProgressText = "Done";
+                
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    Arguments = Path.Join(currentFolder, Constants.OutputFolderName),
+                    FileName = "explorer.exe",
+                };
+                Process.Start(startInfo);
             }
         }
     }

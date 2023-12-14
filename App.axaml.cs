@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using MSRDownloader.Helpers;
 using MSRDownloader.ViewModels;
 using MSRDownloader.Views;
 
@@ -17,8 +18,9 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var options = FileHelper.ReadOptions();
             desktop.MainWindow = new MainWindow();
-            desktop.MainWindow.DataContext = new MainWindowViewModel();
+            desktop.MainWindow.DataContext = new MainWindowViewModel(options);
         }
 
         base.OnFrameworkInitializationCompleted();
