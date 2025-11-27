@@ -106,6 +106,7 @@ public static class FileHelper
         // Remove any invalid characters from the input string
         string invalidChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
         string sanitizedInput = Regex.Replace(input, "[" + Regex.Escape(invalidChars) + "]", "_");
-        return sanitizedInput;
+        sanitizedInput = sanitizedInput.Replace(".", " ");
+        return sanitizedInput.Trim();
     }
 }
